@@ -81,7 +81,7 @@ export default class Coupon extends React.Component {
                                                     <Text style={ [fonts.familyRegular, fonts.size14, !item.used ? fonts.colorLightBlack : { color: '#bfbfbf' }] }>{ item.description }</Text>
                                                     <View style={{ flexDirection: 'row' }}>
                                                         <Text style={ [fonts.familyRegular, fonts.size12, !item.used ? fonts.colorLightBlack : { color: '#bfbfbf' }, { paddingRight: 8 }] }>사용일</Text>
-                                                        <Text style={ [fonts.familyMedium, fonts.size12, !item.used ? fonts.colorLightBlack : { color: '#bfbfbf' }] }>{ item.validDate }</Text>
+                                                        <Text style={ [fonts.familyMedium, fonts.size12, !item.used ? fonts.colorLightBlack : { color: '#bfbfbf' }] }>{ item.used ? item.validDate : '-' }</Text>
                                                     </View>
                                                     <View style={ base.top10 } />
                                                     <Text style={ [fonts.familyBold, fonts.size16, !item.used ? fonts.colorDarkPrimary : { color: '#bfbfbf' }] }>{ number_format(item.discount) + '원' }</Text>
