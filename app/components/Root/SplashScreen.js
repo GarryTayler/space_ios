@@ -43,14 +43,15 @@ class SplashScreen extends React.Component {
         // console.log('Data: ', openResult.notification.payload.additionalData);
         // console.log('isActive: ', openResult.notification.isAppInFocus);
         // console.log('openResult: ', openResult);
+        
         if (openResult.notification.payload.additionalData.page == "save_box") {
-            Actions.reset("home", { push_action: "save_box_statistic" });
+            Actions.reset("home", { params: {push_action: "save_box_statistic" }});
         }
         else if(openResult.notification.payload.additionalData.page == "no_page") {
             Actions.reset("home");
         }
         else if(openResult.notification.payload.additionalData.page == "admin_push") {
-            Actions.reset("home");
+            Actions.reset("home", { params: {push_action: "notice" }});
         }
     }
 

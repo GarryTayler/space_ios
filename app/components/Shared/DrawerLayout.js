@@ -10,11 +10,28 @@ import Images from './../../assets/Images';
 import { showToast } from './../Shared/global';
 import { connect } from "react-redux";
 import { logOut } from '../../actions';
-import { log_out } from '../Root/api';
+import { log_out, get_notice, get_transaction_history } from '../Root/api';
+import DeviceInfo from 'react-native-device-info';
 
 class DrawerLayout extends React.Component {
     constructor(props) {
         super(props);
+        this.state = {
+            noticeNotify: false,
+        };
+        
+    }
+    componentWillReceiveProps(){
+        let uniqueId = DeviceInfo.getUniqueId();
+        get_notice(uniqueId).then((response) => {
+            if(response.data == null){
+                this.setState({noticeNotify : true})
+            } else if(response.data['IS_READ'] == 'Y'){
+                this.setState({noticeNotify : false})
+            }else{
+                this.setState({noticeNotify : true})
+            }
+        })
     }
 
     logout(isFromHome, isReload) {
@@ -29,7 +46,7 @@ class DrawerLayout extends React.Component {
             if (!this.props.isRemoveAccount) {
                 showToast("로그아웃되었습니다. 다시 로그인해주세요.");
             }
-            
+
             this.props.logOut({});
             if (!isFromHome || isReload) {
                 Actions.reset('home');
@@ -132,8 +149,25 @@ class DrawerLayout extends React.Component {
                                 <Icon name="ios-book" style={drawer.itemIcon} type="ionicon" size={16} color='#27ccce' />
                             </View>
                             <Text style={ [fonts.familyMedium, fonts.size14, fonts.colorLightDarkGray] }>{_e.menu_notice}</Text>
+                            {
+                                this.state.noticeNotify ? 
+                                <View style={{width: 9, height: 9, backgroundColor: 'red', borderWidth: 1, borderColor:'red', borderRadius: 4, marginTop:-13, marginLeft: 3}}>
+                                </View>
+                                :
+                                null
+                            }
+
                         </View>
                     </TouchableOpacity>
+                    <TouchableOpacity onPress={()=>this.moveAnotherPage('budget')}>
+                        <View style={drawer.item}>
+                            <View style={{width:20 , display: 'flex' , flexDirection: 'row' , justifyContent: 'flex-start'}}>
+                                <Icon name="ios-help-outline" style={drawer.itemIcon} type="ionicon" size={16} color='#27ccce' />
+                            </View>
+                            <Text style={ [fonts.familyMedium, fonts.size14, fonts.colorLightDarkGray] }>{_e.menu_budget}</Text>
+                        </View>
+                    </TouchableOpacity>
+                    
                     {
                         !(store.getState().user.apiToken == null || store.getState().user.apiToken == '') ?
                         <TouchableOpacity onPress={()=>this.moveAnotherPage('mypage')}>
