@@ -1,19 +1,22 @@
 export const PAGELEN = 10;
 // export const BACKEND_URL = 'https://cryptoonline.ml:3000/';
-//export const BACKEND_URL = 'http://localhost:3000/';
-export const BACKEND_URL = 'https://spare-space.co.kr:3000/';
+//export const BACKEND_URL = 'http://192.168.8.55:3000/';
+//export const BACKEND_URL = 'https://spare-space.co.kr:3000/';
+//export const BACKEND_URL = 'https://space.asfd.online:3000/';
+//export const BACKEND_URL = 'https://newsp.spare-space.co.kr:3000/';
+export const BACKEND_URL = 'https://land-space.ku-min.com:3020/';
+
 
 export const SERVICE_IMGS = [
-    'https://spare-space.co.kr/space/s_manual_1_iphone.png'  ,
-    'https://spare-space.co.kr/space/s_manual_2_iphone.png'  ,
-    'https://spare-space.co.kr/space/s_manual_3_iphone.png'  ,
-    'https://spare-space.co.kr/space/s_manual_4_iphone.png'  ,
-    'https://spare-space.co.kr/space/s_manual_5_iphone.png'  ,
-    'https://spare-space.co.kr/space/s_manual_6_iphone.png'  ,
-    'https://spare-space.co.kr/space/s_manual_7_iphone.png'  ,
-    'https://spare-space.co.kr/space/s_manual_8_iphone.png'  ,
-    'https://spare-space.co.kr/space/s_manual_9_iphone.png'  ,
-    'https://spare-space.co.kr/space/s_manual_10_iphone.png' ];
+    'https://spare-space.co.kr/space/b_manual_1-min.png'  ,
+    'https://spare-space.co.kr/space/b_manual_2-min.png'  ,
+    'https://spare-space.co.kr/space/b_manual_3-min.png'  ,
+    'https://spare-space.co.kr/space/b_manual_4-min.png'  ,
+    'https://spare-space.co.kr/space/b_manual_5-min.png'  ,
+    'https://spare-space.co.kr/space/b_manual_6-min.png'  ,
+    'https://spare-space.co.kr/space/b_manual_7-min.png'  ,
+    'https://spare-space.co.kr/space/b_manual_8-min.png'  ,
+    'https://spare-space.co.kr/space/b_manual_9-min.png' ];
 
 export const PRICE_MAIN = 10000;                        // 기본비용
 export const PRICE_BOX_PER_MONTH = 10000;               // 박스 1개 / 월

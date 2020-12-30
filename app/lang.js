@@ -15,6 +15,7 @@ export const _e = {
     menu_inquiry: "1:1문의하기",
     menu_mypage: "마이페이지",
     menu_notice: "공지사항",
+    menu_budget: "견적문의",
     connectionError: "인터넷 연결오류",
     connectionSuccess: "인터넷 연결성공",
     splashText: "잠시만 기다려주세요.",
@@ -88,5 +89,6 @@ export const _e = {
     bankCheck: "은행을 선택해주세요.",
     depositOwnerNameCheck: "예금주명을 확인해주세요.",
     accountNumberCheck: "계좌번호를 확인해주세요.",
-    saveRefundAccountSuccess: "환불계좌저장이 성공하였습니다."
+    saveRefundAccountSuccess: "환불계좌저장이 성공하였습니다.",
+    noselectedBox: "박스를 선택해야 합니다."
 }

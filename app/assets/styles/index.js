@@ -66,7 +66,7 @@ export const fonts = EStyleSheet.create({
     colorDarkGray: { color: '#4f4f4f' },
     colorLightBlack: { color: '#1f1f1f'},
     colorBlack: { color: 'black' },
-
+    colorGrey : {color: '#585858'},
     colorRed: { color: '#fe0000' }
 });
 
@@ -77,10 +77,12 @@ export const spaces = EStyleSheet.create({
 });
 
 export const base = EStyleSheet.create({
-    // header: {
-    //     paddingTop: getStatusBarHeight(),
-    //     height: 54 + getStatusBarHeight()
-    // },
+    tabHeight: {
+        height: getScreenHeight() - 230
+    },
+    inquiryHeight: {
+        height: getScreenHeight() - 115
+    },
     screenHeight: {
         height: getScreenHeight()
     },
@@ -235,6 +237,34 @@ export const elements = EStyleSheet.create({
         shadowOpacity: 0.8,
         shadowRadius: 2,
         elevation: 1
+    },
+    nextBtn: {
+        height: 50, 
+        paddingHorizontal: 10, 
+        backgroundColor: '#34DEDE', 
+        position: 'absolute', bottom: 30, 
+        borderColor: '#34DEDE', borderRadius: 10, 
+        width: '70%', 
+        alignItems: 'center', justifyContent:'center', 
+        left: '15%',
+        shadowColor: 'rgba(0,0,0, 0.1)',
+        shadowOffset: { width: 0, height: 70 },
+        shadowOpacity: 0.04,
+        shadowRadius: 1,
+        elevation: 8
+    },
+    nextBtn1: {
+        height: 50, 
+        paddingHorizontal: 10, 
+        backgroundColor: '#34DEDE', 
+        borderColor: '#34DEDE', borderRadius: 10, 
+        marginHorizontal: 17,
+        alignItems: 'center', justifyContent:'center', 
+        shadowColor: 'rgba(0,0,0, 0.1)',
+        shadowOffset: { width: 0, height: 70 },
+        shadowOpacity: 0.04,
+        shadowRadius: 1,
+        elevation: 8
     }
 });
 
@@ -379,6 +409,13 @@ export const form = EStyleSheet.create({
         paddingLeft: normalize(16),
         paddingRight: normalize(16),
     },
+    pickerTime: {
+        borderWidth: 1, 
+        borderColor: '#52d6d7', 
+        textAlign: 'center',
+        paddingTop: 2, 
+        paddingBottom: 2
+    }
 });
 
 export const drawer = EStyleSheet.create({
@@ -634,7 +671,8 @@ export const card = EStyleSheet.create({
         shadowOpacity: 0.25,
         shadowRadius: 3.84,
         elevation: 4,
-        borderRadius: 8
+        borderRadius: 8,
+        
     },
     itemCardImg: {
         borderRadius: 8,
