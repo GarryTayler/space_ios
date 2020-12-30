@@ -1,25 +1,7 @@
 //서비스신청(2/1)
 import React from 'react';
-import {
-  Dimensions,
-  View,
-  TouchableOpacity,
-  Image,
-  BackHandler,
-  TouchableHighlight,
-  Keyboard,
-} from 'react-native';
-import {
-  Container,
-  Item,
-  Input,
-  Text,
-  Button,
-  CheckBox,
-  Content,
-  Form,
-  ActionSheet,
-} from 'native-base';
+import { Dimensions, View, TouchableOpacity, Image, BackHandler, TouchableHighlight, Keyboard } from 'react-native';
+import { Container, Item, Input, Text, Button, CheckBox, Content, Form, ActionSheet, Radio } from 'native-base';
 import {base, form, elements, fonts, dialog} from '../../assets/styles';
 import UserHeader from './../Shared/UserHeader';
 import {Actions} from 'react-native-router-flux';
@@ -31,12 +13,7 @@ import {performNetwork, showToast} from './../Shared/global';
 import Postcode from 'react-native-daum-postcode';
 import store from './../../store/configuteStore';
 import {finish} from './../Root/api';
-import Dialog, {
-  ScaleAnimation,
-  DialogContent,
-  DialogFooter,
-  DialogButton,
-} from 'react-native-popup-dialog';
+import Dialog, { ScaleAnimation, DialogContent, DialogFooter, DialogButton } from 'react-native-popup-dialog';
 
 let pageTitle = '보관종료';
 
@@ -51,25 +28,16 @@ export default class CompleteSave extends React.Component {
     this.state = {
       params: props.params,
 
-      viewWidth: 0,
-      viewHeight: 0,
+      viewWidth: 0, viewHeight: 0,
 
       loaded: true,
       isSameAddress: false,
       isAddressSearch: false,
-      detailAddr: '',
-      addr1: '',
-      addr2: '',
-      addressError: null,
-      detailAddrError: null,
-      addr1Error: null,
-      addr2Error: null,
+      detailAddr: '', addr1: '', addr2: '',
+      addressError: null, detailAddrError: null, addr1Error: null, addr2Error: null,
 
-      alertDialogVisible: false,
-      alertDialogMessage: '',
-      confirmType: 0,
-      confirmDialogVisible: false,
-      confirmDialogMessage: '',
+      alertDialogVisible: false, alertDialogMessage: '',
+      confirmType: 0, confirmDialogVisible: false, confirmDialogMessage: '',
     };
   }
 
@@ -154,57 +122,40 @@ export default class CompleteSave extends React.Component {
   }
 
   onBtnCompleteSavePressed() {
-    Keyboard.dismiss();
-    if (this.state.detailAddr == '') {
-      this.setState({addressError: _e.addressCheck, detailAddrError: 'error'});
-      return;
-    }
-    if (this.state.addr1 == '') {
-      this.setState({addressError: _e.addressCheck, addr1Error: 'error'});
-      return;
-    }
-    // if (this.state.addr2 == '')             { this.setState({ addressError: _e.addressCheck, addr2Error: 'error' });            return; }
+        Keyboard.dismiss();
+        if (this.state.detailAddr == '')        { this.setState({ addressError: _e.addressCheck, detailAddrError: 'error' });       return; }
+        if (this.state.addr1 == '')             { this.setState({ addressError: _e.addressCheck, addr1Error: 'error' });            return; }
+        // if (this.state.addr2 == '')             { this.setState({ addressError: _e.addressCheck, addr2Error: 'error' });            return; }
 
-    this.setState({
-      detailAddrError: null,
-      addressError: null,
-      addr1Error: null,
-      addr2Error: null,
-    });
+        this.setState({
+            detailAddrError: null,
+            addressError: null,
+            addr1Error: null,
+            addr2Error: null,
+        });
 
-    this.setState({
-      confirmDialogVisible: true,
-      confirmDialogMessage: _e.completeSavingConfirm,
-    });
-    alertDialogVisible = true;
+        /* 
+        this.setState({
+            confirmDialogVisible: true,
+            confirmDialogMessage: _e.completeSavingConfirm
+        });
+        alertDialogVisible = true; */
+
+        var params = this.state.params;
+        params.homeComp = this.state.params.homeComp;
+
+        params.detail_addr = this.state.detailAddr;
+        params.addr1 = this.state.addr1;
+        params.addr2 = this.state.addr2;
+        params.box_id = this.state.params.boxId;
+        params.key = "complete_save";
+
+        Actions.push("payment", {params: params});
   }
 
   onConfirmDialogButtonPressed() {
-    this.setState({confirmDialogVisible: false});
-    alertDialogVisible = false;
-
-    performNetwork(
-      this,
-      this.state.params.homeComp,
-      finish(
-        store.getState().user.apiToken,
-        this.state.addr1,
-        this.state.addr2,
-        this.state.detailAddr,
-        this.state.params.boxId,
-      ),
-    ).then(response => {
-      if (response == null) {
-        return;
-      }
-
-      this.setState({
-        alertDialogVisible: true,
-        alertDialogMessage: _e.completeSaveSuccess,
-      });
-      alertDialogVisible = true;
-    });
   }
+
   onAlertDialogButtonPressed() {
     this.setState({alertDialogVisible: false});
     alertDialogVisible = false;
@@ -221,9 +172,7 @@ export default class CompleteSave extends React.Component {
         dialogAnimation={new ScaleAnimation(0)}
         width={0.7}
         overlayPointerEvents="none"
-        onHardwareBackPress={() => {
-          this.setState({alertDialogVisible: false});
-        }}
+        onHardwareBackPress={() => { this.setState({alertDialogVisible: false}); }}
         footer={
           <DialogFooter bordered={false} style={dialog.footer}>
             {[
@@ -231,8 +180,7 @@ export default class CompleteSave extends React.Component {
                 key="dismiss"
                 text="확인"
                 textStyle={dialog.footerButton}
-                onPress={() => this.onAlertDialogButtonPressed()}
-              />,
+                onPress={() => this.onAlertDialogButtonPressed()} />
             ]}
           </DialogFooter>
         }>
@@ -307,11 +255,7 @@ export default class CompleteSave extends React.Component {
       <Container>
         <UserHeader title={pageTitle} comp={this} />
 
-        <Content
-          style={[
-            base.whiteBg,
-            {backgroundColor: this.state.loaded ? 'white' : '#efefef'},
-          ]}>
+        <Content style={[ base.whiteBg, {backgroundColor: this.state.loaded ? 'white' : '#efefef'}]}>
           {this.state.isAddressSearch ? (
             <Form style={form.styleForm}>
               <Postcode
@@ -464,6 +408,11 @@ export default class CompleteSave extends React.Component {
                   </View>
                 ) : null}
               </Item>
+               <View style={ [base.top30] } />
+               <View style={[{ display:'flex' , flexDirection:'row' , alignItems: 'center',marginLeft:5 }]}>
+                  <Radio selected={true} selectedColor="#27cccd" />
+                  <Text style={[fonts.familyMedium, fonts.size14, fonts.colorLightBlack, { marginLeft: 8 }]}>일반 택배배송 5,000원</Text>
+               </View>
             </Form>
           )}
           <Spinner_bar

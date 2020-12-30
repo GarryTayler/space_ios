@@ -28,7 +28,8 @@ export default class Certificate extends React.Component {
     
     render() {
         return (
-            
+            <View>
+            </View>
                 // <IMP.Certification
                 //     userCode="imp10391932"
                 //     loading={<Loading />}

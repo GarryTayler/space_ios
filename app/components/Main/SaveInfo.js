@@ -1,7 +1,6 @@
 /*
     Created by Colin (2019-10-01)
 */
-
 import React from 'react';
 import { Dimensions, View } from 'react-native';
 import { Container, Form, Item, Text, Button, Card, CardItem, Body, Left, Right } from 'native-base';
@@ -16,9 +15,7 @@ import { PRICE_BOX_PER_MONTH } from '../../constants';
 import store from "./../../store/configuteStore";
 import { storage_detail_info } from './../Root/api';
 import Spinner_bar from 'react-native-loading-spinner-overlay';
-
 let pageTitle = '보관 정보';
-
 class SaveInfo extends React.Component {
 
     constructor(props) {
@@ -36,6 +33,7 @@ class SaveInfo extends React.Component {
     }
 
     componentDidMount() {
+        
         this.setState({ viewWidth: Math.round(Dimensions.get('window').width) });
         this.fetchData();
     }
@@ -46,8 +44,10 @@ class SaveInfo extends React.Component {
         }
         performNetwork(this, this.state.homeComp, storage_detail_info(store.getState().user.apiToken, this.state.boxId)).then((response) => {
             if (response == null) { return; }
-            
             var saveInfoData = response.data.box_list[0];
+
+            console.log("[saveInfoData]=============", saveInfoData);
+
             let startDate = new Date(saveInfoData.start_date);
             let endDate = new Date(saveInfoData.end_date);
             let extensionDate = new Date(saveInfoData.end_date);
@@ -70,6 +70,12 @@ class SaveInfo extends React.Component {
         }
     }
 
+    //연장결제
+    onExtendPayPressed() {
+        Actions.push("extend_pay", { params: { homeComp: this.state.homeComp, boxId: this.state.boxId, saveInfoData: this.state.saveInfoData } });
+    }
+
+    //보관종료
     onBtnExitSavingPressed() {
         Actions.push("complete_save", { params: { homeComp: this.state.homeComp, boxId: this.state.boxId } });
     }
@@ -97,35 +103,48 @@ class SaveInfo extends React.Component {
 
                                     <Form style={{ alignSelf: 'center', alignItems: 'center' }}>
                                         <View style={ spaces.vertical10 }/>
-                                        <Text style={ [fonts.familyMedium, fonts.size14, fonts.colorMiddleDarkPrimary] }>물품 수량</Text>
-                                        <Text style={ [fonts.familyMedium, fonts.size34, fonts.colorLightBlack] }>{ this.state.saveInfoData.total_count }개</Text>
+                                        {
+                                            this.props.params.type != 'completed' ?
+                                            <Text style={ [fonts.familyMedium, fonts.size14, fonts.colorMiddleDarkPrimary] }>물품 수량</Text>
+                                            :
+                                            null
+                                        }
+                                        {
+                                            this.props.params.type != 'completed' ?
+                                            <Text style={ [fonts.familyMedium, fonts.size34, fonts.colorLightBlack] }>{ this.state.saveInfoData.total_count }개</Text>
+                                            :
+                                            null
+                                        }
                                         <Text style={ [fonts.familyRegular, fonts.size13, fonts.colorMiddleDarkGray] }>보관기간: { this.state.saveInfoData.start_date + " ~ " + this.state.saveInfoData.end_date }</Text>
                                     </Form>
 
                                     <View style={ spaces.vertical10 }/>
-                                    <Item style={{ borderBottomWidth: 0, padding: 10 }}>
-                                        <Left style={{ alignItems: 'flex-end' }}>
-                                            <View style={{ flexDirection: 'column', width: 80, height: 80, borderRadius: 40, backgroundColor: '#52d6d7', alignItems: 'center' }}>
-                                                <View style={{ flex: 1 }} />
-                                                <Text style={ [fonts.familyRegular, fonts.size12, fonts.colorWhite, { textAlignVertical: 'bottom' }] }>보관중</Text>
-                                                <Text style={ [fonts.familyRegular, fonts.size21, fonts.colorWhite,  { flex: 2, textAlignVertical: 'top' }] }>{ this.state.saveInfoData.storage_count }</Text>
-                                            </View>
-                                        </Left>
-                                        <Body>
-                                            <View style={{ flexDirection: 'column', width: 80, height: 80, borderRadius: 40, backgroundColor: '#52d6d7', alignItems: 'center' }}>
-                                                <View style={{ flex: 1 }} />
-                                                <Text style={ [fonts.familyRegular, fonts.size12, fonts.colorWhite, { textAlignVertical: 'bottom' }] }>배송중</Text>
-                                                <Text style={ [fonts.familyRegular, fonts.size21, fonts.colorWhite,  { flex: 2, textAlignVertical: 'top' }] }>{ this.state.saveInfoData.delivery_count }</Text>
-                                            </View>
-                                        </Body>
-                                        <Right style={{ alignItems: 'flex-start' }}>
-                                            <View style={{ flexDirection: 'column', width: 80, height: 80, borderRadius: 40, backgroundColor: '#52d6d7', alignItems: 'center' }}>
-                                                <View style={{ flex: 1 }} />
-                                                <Text style={ [fonts.familyRegular, fonts.size12, fonts.colorWhite, { textAlignVertical: 'bottom' }] }>배송완료</Text>
-                                                <Text style={ [fonts.familyRegular, fonts.size21, fonts.colorWhite,  { flex: 2, textAlignVertical: 'top' }] }>{ this.state.saveInfoData.finish_count }</Text>
-                                            </View>
-                                        </Right>
-                                    </Item>
+                                    {
+                                        this.props.params.type != 'completed' ?
+                                        <Item style={{ borderBottomWidth: 0, padding: 10 }}>
+                                            <Left style={{ alignItems: 'flex-end' }}>
+                                                <View style={{ flexDirection: 'column', width: 80, height: 80, borderRadius: 40, backgroundColor: '#52d6d7', alignItems: 'center' }}>
+                                                    <Text style={ [fonts.familyRegular, fonts.size13, fonts.colorWhite, { flex: 1, textAlignVertical: 'bottom' }] }>보관중</Text>
+                                                    <Text style={ [fonts.familyRegular, fonts.size21, fonts.colorWhite,  { flex: 1, textAlignVertical: 'top' }] }>{ this.state.saveInfoData.storage_count }</Text>
+                                                </View>
+                                            </Left>
+                                            <Body>
+                                                <View style={{ flexDirection: 'column', width: 80, height: 80, borderRadius: 40, backgroundColor: '#52d6d7', alignItems: 'center' }}>
+                                                    <Text style={ [fonts.familyRegular, fonts.size13, fonts.colorWhite, { flex: 1, textAlignVertical: 'bottom' }] }>배송중</Text>
+                                                    <Text style={ [fonts.familyRegular, fonts.size21, fonts.colorWhite,  { flex: 1, textAlignVertical: 'top' }] }>{ this.state.saveInfoData.delivery_count }</Text>
+                                                </View>
+                                            </Body>
+                                            <Right style={{ alignItems: 'flex-start' }}>
+                                                <View style={{ flexDirection: 'column', width: 80, height: 80, borderRadius: 40, backgroundColor: '#52d6d7', alignItems: 'center' }}>
+                                                    <Text style={ [fonts.familyRegular, fonts.size13, fonts.colorWhite, { flex: 1, textAlignVertical: 'bottom' }] }>배송완료</Text>
+                                                    <Text style={ [fonts.familyRegular, fonts.size21, fonts.colorWhite,  { flex: 1, textAlignVertical: 'top' }] }>{ this.state.saveInfoData.finish_count }</Text>
+                                                </View>
+                                            </Right>
+                                        </Item>
+                                        :
+                                        null
+                                    }
+                                    
 
                                     <View style={ spaces.vertical10 } />
                                     <Item style={{ borderBottomWidth: 0, paddingHorizontal: 10, paddingTop: 10 }}>
@@ -133,7 +152,7 @@ class SaveInfo extends React.Component {
                                             <Text style={ [fonts.familyMedium, fonts.size13, fonts.colorMiddleDarkPrimary] }>자동 결제 예정 금액</Text>
                                         </Left>
                                         <Right>
-                                        <Text style={ [fonts.familyRegular, fonts.size13, fonts.colorMiddleDarkGray] }>{ number_format(this.state.saveInfoData.cost) }원</Text>
+                                            <Text style={ [fonts.familyRegular, fonts.size13, fonts.colorMiddleDarkGray] }>{ number_format(this.state.saveInfoData.cost) }원</Text>
                                         </Right>
                                     </Item>
                                     <View style={ spaces.vertical10 } />
@@ -151,17 +170,42 @@ class SaveInfo extends React.Component {
                     }
                 </Form>
 
-                <View style={ form.itemContainer }>
-                    <Button full style={ form.submitButton1 } onPress={ () => this.onActionButtonPressed() }>
-                        <Text style={ [fonts.familyBold, fonts.size15, fonts.colorWhite] }>
-                            { this.state.saveInfoData == null || this.state.saveInfoData.storage_count == 0 ? "재보관 하기" : "나의 물품 확인" }
-                        </Text>
-                    </Button>
-                    <View style={ base.top10 } />
-                    <Button full style={ form.submitButton1 } onPress={ () => this.onBtnExitSavingPressed() }>
-                        <Text style={ [fonts.familyBold, fonts.size15, fonts.colorWhite] }>보관종료</Text>
-                    </Button>
-                </View>
+                {
+                    this.props.params.type != 'completed' ?
+                    <View style={ form.itemContainer }>
+                        <Button full style={ form.submitButton1 } onPress={ () => this.onActionButtonPressed() }>
+                            <Text style={ [fonts.familyBold, fonts.size15, fonts.colorWhite] }>
+                                { this.state.saveInfoData == null || this.state.saveInfoData.storage_count == 0 ? "재보관 하기" : "나의 물품 확인" }
+                            </Text>
+                        </Button>
+                        <View style={ base.top10 } />
+                        
+                        <Button full style={ form.submitButton1 } onPress={ () => this.onExtendPayPressed() }>
+                            <Text style={ [fonts.familyBold, fonts.size15, fonts.colorWhite] }>
+                                연장결제
+                            </Text>
+                        </Button>
+                    
+                        <View style={ base.top10 } />
+                        
+                        <Button full style={ form.submitButton1 } onPress={ () => this.onBtnExitSavingPressed() }>
+                            <Text style={ [fonts.familyBold, fonts.size15, fonts.colorWhite] }>보관종료</Text>
+                        </Button>
+                    </View>
+                    :
+                    ( this.state.saveInfoData != null && this.state.saveInfoData.restore ? 
+                        <View style={ form.itemContainer }>
+                            <Button full style={ form.submitButton1 } onPress={ () => this.onActionButtonPressed() }>
+                                <Text style={ [fonts.familyBold, fonts.size15, fonts.colorWhite] }>
+                                    재보관 하기
+                                </Text>
+                            </Button>
+                        </View>
+                        :
+                        null
+                    )  
+                }
+                
                 <Spinner_bar color={'#27cccd'} visible={!this.state.loaded} textContent={""}  overlayColor={"rgba(0, 0, 0, 0.5)"}  />
             </Container>
         )
