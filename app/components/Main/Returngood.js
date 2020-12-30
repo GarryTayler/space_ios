@@ -87,7 +87,6 @@ export default class Returngood extends React.Component {
         else {
             addr1 = address + (buildingName == '' ? '' : ", ") + buildingName;
         }
-
         this.setState({
             detailAddr: zonecode,
             //addr1: query + (roadname == '' ? '' : ' ') + roadname,
@@ -117,7 +116,9 @@ export default class Returngood extends React.Component {
         params.addr1 = this.state.addr1;
         params.addr2 = this.state.addr2;
 
-        params.key = "return_good"
+        
+        params.key = this.state.params.selectedType ? "good_restore" : "return_good"
+        
 
         Actions.push("payment", { params: params });
     }
@@ -125,7 +126,7 @@ export default class Returngood extends React.Component {
     render() {
         return (
             <Container>
-                <UserHeader title={pageTitle} comp={ this }/>
+                <UserHeader title={this.props.params.selectedType == 1 ? '물품 재보관 신청' : pageTitle} comp={ this }/>
 
                 <Content style={[base.whiteBg, { backgroundColor: this.state.loaded ? 'white' : '#efefef' }]}>
                     { this.state.isAddressSearch ?
@@ -160,7 +161,7 @@ export default class Returngood extends React.Component {
                                     />
                                 </Item>
                                 <Button style={[form.vbutton , { marginLeft: 8, width: 40, height: 40}]} onPress={ () => { this.searchAddressButtonPressed() } }>
-                                    <Icon color='#fff' name='md-search' type='ionicon' />
+                                    <Icon color='#fff' name='md-search' type='ionicon' /> 
                                 </Button>
                             </View>
                             <Item rounded style={ this.state.addr1Error != null ? form.item_common_failed : form.item_common }>
@@ -192,7 +193,7 @@ export default class Returngood extends React.Component {
                             <View style={[{ display:'flex' , flexDirection:'row' , alignItems: 'center',marginLeft:5 }]}>
                                     <Image
                                     style={{ width: 20, height: 20 }}
-                                    source={ Images.ic_radio_on } />
+                                    source={ Images.ic_radio_on } /> 
                                 <Text style={[fonts.familyMedium, fonts.size14, fonts.colorLightBlack, { marginLeft: 8 }]}>일반 택배배송 5,000원</Text>
                             </View>
                         </Form>

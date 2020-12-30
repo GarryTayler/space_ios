@@ -4,7 +4,7 @@
 
 import React from 'react';
 import { Dimensions, View } from 'react-native';
-import { Container, Tab, Tabs, Form, Item, Text, Button, Card, CardItem, Body, Left, Right } from 'native-base';
+import { Container, Tab, Tabs, ScrollableTab, Form, Item, Text, Button, Card, CardItem, Body, Left, Right } from 'native-base';
 import UserHeader from './../Shared/UserHeader';
 import { base, form, tabs, elements, card, fonts } from './../../assets/styles';
 import { connect } from "react-redux";
@@ -91,7 +91,7 @@ class SaveBoxStatistic extends React.Component {
         // Actions.reset("home", { push_action: "save_box" });
     }
     onBtnRequestSavingPressed() {
-        Actions.reset("home", { push_action: "addressrequest" });
+        Actions.reset("home", { params: { push_action: "addressrequest" }});
     }
 
     renderTabs() {
@@ -115,7 +115,7 @@ class SaveBoxStatistic extends React.Component {
         ));
 
         return (
-            <Tabs tabBarUnderlineStyle={ tabs.tabBarUnderline } >
+            <Tabs tabBarUnderlineStyle={ tabs.tabBarUnderline }>
                 { arrTab }
             </Tabs>
         );

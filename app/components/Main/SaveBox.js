@@ -35,6 +35,7 @@ class SaveBox extends React.Component {
             curTabIndex: 0,
             arrSaveBoxData: [],
             arrNumOfSelectedItems: [],
+            selectedType: 0,
 
             returnWarningDialogVisible: false,
         };
@@ -137,7 +138,6 @@ class SaveBox extends React.Component {
             goods_list.forEach(item => {
                 item.isSelected = false;
             });
-
             arrTemp.push({
                 box_no: arrBoxData[index].box_no,
                 box_id: arrBoxData[index].box_id,
@@ -156,6 +156,10 @@ class SaveBox extends React.Component {
         var arrNumOfSelectedItems = this.state.arrNumOfSelectedItems;
         arrNumOfSelectedItems[this.state.curTabIndex] = numOfSelectedItems;
         this.setState({arrNumOfSelectedItems: arrNumOfSelectedItems});
+    }
+
+    onItemTypeSelected(type) {
+        this.setState({selectedType: type})
     }
 
     onBtnReturnItemPressed() {
@@ -188,7 +192,8 @@ class SaveBox extends React.Component {
             homeComp: this.state.params.homeComp,
             box_id: box_id,
             good_ids: good_ids,
-            goods_list: goods_list
+            goods_list: goods_list,
+            selectedType: this.state.selectedType
         }});
     }
     gotoCompleteSave() {
@@ -301,10 +306,17 @@ class SaveBox extends React.Component {
                             <Text style={[fonts.familyBold, fonts.size15, fonts.colorWhite]}>선택취소</Text>
                         </Button>
                         <View style={base.horizontal10}></View>
-                        <Button full style={[form.submitButton1, {flex: 1}]}
-                                onPress={() => this.onBtnReturnItemPressed()}>
-                            <Text style={[fonts.familyBold, fonts.size15, fonts.colorWhite]}>{this.state.arrNumOfSelectedItems[this.state.curTabIndex]}개 물건 찾기</Text>
-                        </Button>
+                        {
+                            this.state.selectedType == 0 ?
+                            <Button full style={[form.submitButton1, {flex: 1}]} onPress={() => this.onBtnReturnItemPressed()}>
+                                <Text style={[fonts.familyBold, fonts.size15, fonts.colorWhite]}>{this.state.arrNumOfSelectedItems[this.state.curTabIndex]}개 물건 찾기</Text>
+                            </Button>
+                            :
+                            <Button full style={[form.submitButton1, {flex: 1}]} onPress={() => this.onBtnReturnItemPressed()}>
+                                <Text style={[fonts.familyBold, fonts.size15, fonts.colorWhite]}>다시보관하기</Text>
+                            </Button>
+                        }
+                        
                     </Item>}
 
                 {this.renderReturnWarningDialog()}

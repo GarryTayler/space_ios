@@ -11,6 +11,7 @@ import { _e } from "../../lang";
 import { FlatGrid } from 'react-native-super-grid';
 import Images from "../../assets/Images";
 import Dialog, { ScaleAnimation, DialogContent, DialogFooter, DialogButton } from 'react-native-popup-dialog';
+import Img from 'react-image'
 
 var itemDetailModalVisible = false;
 
@@ -67,11 +68,14 @@ class SaveBoxTab extends React.Component {
         this.setState({ isSelectingMode: true });
         
         var boxData = this.state.boxData;
+        var all_cnt = 0;
         boxData.goods_list.forEach(item => {
+            if(item.status != 3)
+                all_cnt ++;
             item.isSelected = true;
         });
 
-        this.setState({ boxData: boxData, numOfSelectedItems: boxData.goods_list.length });
+        this.setState({ boxData: boxData, numOfSelectedItems: all_cnt });
         
         this.props.parent.onItemSelected(boxData.goods_list.length);
     }
@@ -96,19 +100,41 @@ class SaveBoxTab extends React.Component {
     }
     selectItem(index) {
         var boxData = this.state.boxData;
-        boxData.goods_list[index].isSelected = !boxData.goods_list[index].isSelected;
-
-        this.setState({ boxData: boxData });
-
-        var numOfSelectedItems = 0;
-        boxData.goods_list.forEach(item => {
-            if (item.isSelected) {
-                numOfSelectedItems ++;
+        if(boxData.goods_list.length > 0) {
+            let selectedType = 0;
+            boxData.goods_list.forEach(item => {
+                if(item.isSelected && item.status == 3){
+                    selectedType = 1;
+                }
+            })
+            if(this.state.numOfSelectedItems == 0) {
+                if(boxData.goods_list[index].status == 3)
+                    selectedType = 1;
+                else
+                    selectedType = 0;
+                boxData.goods_list[index].isSelected = !boxData.goods_list[index].isSelected;
             }
-        });
-        this.setState({ numOfSelectedItems: numOfSelectedItems });
+            else if(boxData.goods_list[index].status == 3 && selectedType == 1){
+                selectedType = 1;
+                boxData.goods_list[index].isSelected = !boxData.goods_list[index].isSelected;
+            }
+            else if(this.state.numOfSelectedItems == 0 || boxData.goods_list[index].status != 3 && selectedType == 0){
+                selectedType = 0;
+                boxData.goods_list[index].isSelected = !boxData.goods_list[index].isSelected;
+            }
 
-        this.props.parent.onItemSelected(numOfSelectedItems);
+            this.setState({ boxData: boxData });
+    
+            var numOfSelectedItems = 0;
+            boxData.goods_list.forEach(item => {
+                if (item.isSelected) {
+                    numOfSelectedItems ++;
+                }
+            });
+            this.setState({ numOfSelectedItems: numOfSelectedItems });
+            this.props.parent.onItemSelected(numOfSelectedItems);
+            this.props.parent.onItemTypeSelected(selectedType);
+        }
     }
 
     unselectItems() {
@@ -224,27 +250,31 @@ class SaveBoxTab extends React.Component {
                     items={ this.state.boxData.goods_list }
                     renderItem={({ item, index }) => (
                         <Card style={ card.itemCard } >
-                            <Image
+                            <Image  resizeMethod={"resize"}
                                 style={ card.itemCardImg }
-                                source={{ uri: item.image }} />
-
-                            <CardItem button style={ card.itemCardItem }
-                                onPress={() => this.onItemPressed(index) }
-                                onLongPress={ () => this.onItemLongPressed(index)}>
-                            </CardItem>
+                                source={{ uri: item.image }}
+                                resizeMode="stretch" />
+                            {
+                                item.status == 3 ?
+                                <CardItem button style={ [card.itemCardItem, {justifyContent: 'center'}] }
+                                    onPress={() => this.onItemPressed(index) }
+                                    onLongPress={ () => this.onItemLongPressed(index)}>
+                                    <Text style={{color: 'white', fontSize: 30, color: 'red'}}>찾기 완료</Text>
+                                </CardItem>
+                                :
+                                <CardItem button style={ [card.itemCardItem, {justifyContent: 'center'}] }
+                                    onPress={() => this.onItemPressed(index) }
+                                    onLongPress={ () => this.onItemLongPressed(index)}>
+                                </CardItem>
+                            }
+                            
                             
                             { this.state.isSelectingMode ? 
-                                <View style={ card.itemSelectionRadio }>
-                                    <Image
-                                    style={{ width: 20, height: 20 }}
-                                    source={ item.isSelected ? Images.ic_radio_on : Images.ic_radio_off } />
-                                </View>
-
-                            // <Radio disabled
-                            //     color={ '#b1b1b1' }
-                            //     selectedColor={ '#27cccd' }
-                            //     selected={ item.isSelected }
-                            //     style={ card.itemSelectionRadio } />
+                            <Radio disabled
+                                color={ '#b1b1b1' }
+                                selectedColor={ '#27cccd' }
+                                selected={ item.isSelected }
+                                style={ card.itemSelectionRadio} />
                             : <View />}
                         </Card>
                     )} />
