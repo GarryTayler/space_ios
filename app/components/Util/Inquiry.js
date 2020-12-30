@@ -31,11 +31,10 @@ export default class Inquiry extends React.Component {
     fetchInquiryData() {
         performNetwork(this, this.state.params.homeComp, get_inquiry_list(store.getState().user.apiToken)).then((response) => {
             if (response == null) { return; }
-            
             var arrData = response.data;
             arrData.forEach(data => {
                 let inquiryDate = new Date(data.inquiry_time * 1000);
-                data.date = "" + 
+                data.date = "" +
                     ("" + inquiryDate.getFullYear()).substr(-2) + "." +
                     ("0" + (inquiryDate.getMonth() + 1)).substr(-2) + "." +
                     ("0" + inquiryDate.getDate()).substr(-2);
@@ -110,17 +109,24 @@ export default class Inquiry extends React.Component {
                 <UserHeader title={pageTitle} />
 
                 <Content style={base.whiteBg}>
-                    { this.renderInquiry() }
+                    { (this.state.arrData == null || this.state.arrData.length == 0) ?
+                    (
+                        <View style={[{display: 'flex' , flexDirection: 'row' , justifyContent: 'center', alignItems: 'center'} , base.inquiryHeight]}>
+                            <Text style={ [fonts.familyMedium, fonts.size14, fonts.colorMiddleDarkGray] }>
+                                내역이 없습니다.
+                            </Text>
+                        </View>
+                    )
+                        :
+                        this.renderInquiry()
+                    }
                 </Content>
-
                 <View style={ form.styleForm }>
                     <Button full style={form.submitButton1} onPress={()=>this.gotoCreateInquiry()}>
                         <Text style={[fonts.familyBold, fonts.size15, fonts.colorWhite]}>문의작성</Text>
                     </Button>
                 </View>
-
                 <Spinner_bar color={'#27cccd'} visible={!this.state.loaded} textContent={""} overlayColor={"rgba(0, 0, 0, 0.5)"} />
-
             </Container>
         );
     }

@@ -29,6 +29,9 @@ import Createinquiry from './app/components/Util/Createinquiry';
 import AddressRequest from './app/components/Main/AddressRequest';
 import Inquiry from './app/components/Util/Inquiry';
 import Notice from './app/components/Util/Notice';
+import Budget from './app/components/Util/Budget';
+import Createbudget from './app/components/Util/Createbudget';
+import Viewbudget from './app/components/Util/Viewbudget';
 import Faq from './app/components/Util/Faq';
 import Update_profile from './app/components/Mypage/Update_profile';
 import Modifypassword from './app/components/Mypage/Modifypassword';
@@ -45,9 +48,11 @@ import SaveInfo from './app/components/Main/SaveInfo';
 import CompleteSave from './app/components/Main/CompleteSave';
 import SaveBoxStatistic from './app/components/Main/SaveBoxStatistic';
 import RequestService from './app/components/Main/RequestService';
+import RequestServicePeriod from './app/components/Main/RequestServicePeriod';
 import Policy from './app/components/User/Policy';
 import Servicerule from './app/components/User/Servicerule';
 import RefundAccount from './app/components/Mypage/RefundAccount';
+import ExtendPay from './app/components/Main/ExtendPay';
 
 EStyleSheet.build({
     $fontNotoSansRegular: 'NotoSansCJKkr-Regular',
@@ -85,6 +90,9 @@ class App extends React.Component {
     }
 
     componentWillUnmount() {
+        OneSignal.removeEventListener('received', this.onReceived);
+        OneSignal.removeEventListener('opened', this.onOpened);
+        OneSignal.removeEventListener('ids', this.onIds);
     }
     onBackPress() {
     }
@@ -106,12 +114,14 @@ class App extends React.Component {
 
                                         <Scene key="addressrequest" component={AddressRequest}/>
                                         <Scene key="request_service" component={RequestService}/>
+                                        <Scene key="request_service_period" component={RequestServicePeriod}/>
 
                                         <Scene key="save_box" component={SaveBox}/>
                                         <Scene key="returngood" component={Returngood}/>
 
                                         <Scene key="save_box_statistic" component={SaveBoxStatistic}/>
                                         <Scene key="save_info" component={SaveInfo}/>
+                                        <Scene key="extend_pay" component={ExtendPay} />
                                         <Scene key="restore" component={Restore}/>
                                         <Scene key="complete_save" component={CompleteSave}/>
 
@@ -130,6 +140,9 @@ class App extends React.Component {
                                         <Scene key="inquiry" component={Inquiry}/>
                                         <Scene key="createinquiry" component={Createinquiry}/>
                                         <Scene key="notice" component={Notice}/>
+                                        <Scene key="budget" component={Budget}/>
+                                        <Scene key="createbudget" component={Createbudget}/>
+                                        <Scene key="viewbudget" component={Viewbudget}/>
                                         <Scene key="faq" component={Faq}/>
                                     </Scene>
                                 </Drawer>

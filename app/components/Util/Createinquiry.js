@@ -28,9 +28,7 @@ export default class Createinquiry extends React.Component {
         Keyboard.dismiss();
         performNetwork(this, this.state.params.homeComp, create_inquiry(store.getState().user.apiToken, this.state.title, this.state.contents)).then((response) => {
             if (response == null) { return; }
-
             showToast("문의를 등록하였습니다.", 'success');
-            
             this.state.params.parent.refreshData();
             Actions.pop();
         });

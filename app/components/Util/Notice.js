@@ -8,6 +8,7 @@ import {Actions} from 'react-native-router-flux';
 import Spinner_bar from 'react-native-loading-spinner-overlay';
 import { get_notice_list } from './../Root/api';
 import {performNetwork, showToast} from '../Shared/global';
+import DeviceInfo from 'react-native-device-info';
 
 let pageTitle = '공지사항';
 
@@ -24,9 +25,9 @@ export default class Notice extends React.Component {
     }
 
     componentDidMount() {
-        performNetwork(this, this.state.params.homeComp, get_notice_list()).then((response) => {
+        let uniqueId = DeviceInfo.getUniqueId();
+        performNetwork(this, this.state.params.homeComp, get_notice_list(uniqueId)).then((response) => {
             if (response == null) { return; }
-            
             const arrData = response.data;
             arrData.forEach(data => {
                 let inquiryDate = new Date(data.notice_time * 1000);

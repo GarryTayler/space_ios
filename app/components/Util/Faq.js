@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, TouchableHighlight } from 'react-native';
-import { Container, Item, Input , Text , Button , Textarea , Content, Body, Right , Tabs , Tab } from 'native-base';
+import { Container, Item, Input , Text , Button , Textarea , Content, Body, Right , Tabs , Tab , ScrollableTab } from 'native-base';
 import { Icon } from 'react-native-elements';
 import { base , form , elements , tabsStyles, fonts, tabs } from '../../assets/styles';
 import UserHeader from './../Shared/UserHeader';
@@ -53,29 +53,31 @@ export default class Faq extends React.Component {
                 <UserHeader title={pageTitle} />
 
                 <Content>
-                    { this.state.arrData == null || this.state.arrData.length == 0 ? null :
-                        this.state.arrData.map((item, index) => (
-                            <View key={ index }>
+                { this.state.arrData == null || this.state.arrData.length == 0 ? null :
+                    this.state.arrData.map((item, index) => (
+                        <View key={ index }>
 
-                                <TouchableHighlight onPress={ () => { this.itemPreessed(index) } }>
-                                    <View style={{ backgroundColor: 'white', borderBottomColor: '#ededed', borderBottomWidth: 1, padding: 16, paddingRight: 0 }}>
-                                        <View style={{ flexDirection: 'row' }}>
-                                            <Body style={{ flex: 5, alignItems: 'flex-start' }}>
-                                                <Text style={ [fonts.familyMedium, fonts.size12, fonts.colorLightBlack] }>{ item.title }</Text>
-                                            </Body>
+                            <TouchableHighlight onPress={ () => { this.itemPreessed(index) } }>
+                                <View style={{ backgroundColor: 'white', borderBottomColor: '#ededed', borderBottomWidth: 1, padding: 16, paddingRight: 0 }}>
+                                    <View style={{ flexDirection: 'row' }}>
+                                        <Body style={{ flex: 5, alignItems: 'flex-start' }}>
+                                            <Text style={ [fonts.familyMedium, fonts.size15, fonts.colorLightBlack] }>{ item.title }</Text>
+                                        </Body>
+                                        <Right style={{ flex: 1 }}>
                                             <Icon name={ item.contentVisible ? 'chevron-up' : 'chevron-down' } type='evilicon' size={44} color='#a2a2a2' />
-                                        </View>
+                                        </Right>
                                     </View>
-                                </TouchableHighlight>
-
-                                { item.contentVisible?
-                                <View style={{ paddingHorizontal: 16, paddingBottom: 8, backgroundColor: '#f6f6f6' }}>
-                                    <Text style={ [fonts.familyRegular, fonts.size11, fonts.colorLightBlack, { lineHeight: 24 }] }>{ item.contents }</Text>
                                 </View>
-                                :
-                                null }
+                            </TouchableHighlight>
+
+                            { item.contentVisible?
+                            <View style={{ paddingHorizontal: 16, paddingBottom: 8, backgroundColor: '#f6f6f6' }}>
+                                <Text style={ [fonts.familyRegular, fonts.size12, fonts.colorLightBlack, { lineHeight: 20 }] }>{ item.contents }</Text>
                             </View>
-                    ))}
+                            :
+                            null }
+                        </View>
+                ))}
                 </Content>
 
                 <Spinner_bar color={'#27cccd'} visible={!this.state.loaded} textContent={""} overlayColor={"rgba(0, 0, 0, 0.5)"} />
