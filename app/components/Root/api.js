@@ -161,8 +161,32 @@ export function get_faq_list() {
     return createCall('util/get_faq_list');
 }
 
-export function get_notice_list() {
-    return createCall('util/get_notice_list');
+export function get_notice_list(uniqueID) {
+    return createCall('util/get_notice_list', {uniqueID});
+}
+
+export function get_estimate_list(api_token) {
+    return createCall(
+        'util/get_estimate_list',
+        null,
+        api_token,
+    );
+}
+
+export function create_estimate(api_token, name, contact, contents) {
+    return createCall(
+        'util/create_estimate',
+        {name, contact, contents},
+        api_token,
+    );
+}
+
+export function get_estimate_info(api_token, ID) {
+    return createCall(
+        'util/get_estimate_info',
+        {ID},
+        api_token,
+    );
 }
 
 // service
@@ -178,7 +202,7 @@ export function getBoxList() {
     return createCall('service/getBoxList');
 }
 
-export function request(api_token, space_list, space_cost, main_cost, discount, cost, coupon, desc, addr1, addr2, detail_addr, card_num, card_mm, card_yy, card_birth_no, card_pwd) {
+export function request(api_token, space_list, space_cost, main_cost, discount, cost, coupon, desc, addr1, addr2, detail_addr, card_num, card_mm, card_yy, card_birth_no, card_pwd, is_thing_check) {
     return createCall(
         'service/request',
         {
@@ -196,7 +220,8 @@ export function request(api_token, space_list, space_cost, main_cost, discount, 
             card_mm: card_mm,
             card_yy: card_yy,
             card_birth_no: card_birth_no,
-            card_pwd: card_pwd
+            card_pwd: card_pwd,
+            isThingCheck : is_thing_check
         },
         api_token,
     );
@@ -226,10 +251,18 @@ export function get_boxstorage_info(api_token) {
     );
 }
 
-export function return_request(api_token, request_id) {
+export function return_request(api_token, request_id, request_date,request_time) {
     return createCall(
         'service/return_request',
-        {request_id},
+        {request_id, request_date,request_time},
+        api_token,
+    );
+}
+
+export function get_time_list(api_token, request_date) {
+    return createCall(
+        'service/get_time_list',
+        {request_date},
         api_token,
     );
 }
@@ -266,18 +299,18 @@ export function get_empty_box(api_token) {
     );
 }
 
-export function restore_in_period(api_token, box_count, combined_box_count, cost, desc, addr1, addr2, detail_addr, card_num, card_mm, card_yy, card_birth_no, card_pwd) {
+export function restore_in_period(api_token, cost, desc, addr1, addr2, detail_addr, card_num, card_mm, card_yy, card_birth_no, card_pwd, box_id) {
     return createCall(
         'service/restore_in_period',
-        {addr1, addr2, detail_addr, cost, card_num, card_mm, card_yy, card_birth_no, card_pwd, box_count, combined_box_count, desc},
+        {addr1, addr2, detail_addr, cost, card_num, card_mm, card_yy, card_birth_no, card_pwd, desc, box_id},
         api_token,
     );
 }
 
-export function finish(api_token, addr1, addr2, detail_addr, box_id) {
+export function finish(api_token, addr1, addr2, detail_addr, box_id, desc, card_num, card_mm, card_yy, card_birth_no, card_pwd) {
     return createCall(
         'service/finish',
-        {api_token, addr1, addr2, detail_addr, box_id},
+        {api_token, addr1, addr2, detail_addr, box_id, desc, card_num, card_mm, card_yy, card_birth_no, card_pwd},
         api_token,
     );
 }
@@ -331,3 +364,26 @@ export function get_refund_info(api_token) {
     );
 }
 
+export function get_notice(deviceID) {
+    return createCall(
+        'user/get_notice',
+        {deviceID},
+        null,
+    );
+}
+
+export function good_restore(api_token, good_ids, box_id, cost, desc, addr1, addr2, detail_addr, card_num, card_mm, card_yy, card_birth_no, card_pwd) {
+    return createCall(
+        'service/good_restore',
+        {addr1, addr2, detail_addr, cost, card_num, card_mm, card_yy, card_birth_no, card_pwd, good_ids, box_id, desc},
+        api_token,
+    );
+}
+
+export function request_extended_payment(api_token, card_num, card_mm, card_yy, card_birth_no, card_pwd, box_id, months, cost, desc, coupon) {
+    return createCall(
+        'service/request_extended_payment',
+        {card_num, card_mm, card_yy, card_birth_no, card_pwd, box_id, months, cost, desc, coupon},
+        api_token,
+    );
+}
