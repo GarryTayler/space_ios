@@ -32,9 +32,12 @@ const Images = {
 
     coupon_container_white: require('./img/coupon_container_white.png'),
     coupon_container_gray: require('./img/coupon_container_gray.png'),
-
     ic_radio_off: require('./img/ic_radio_off.png'),
     ic_radio_on: require('./img/ic_radio_on.png'),
-    splash_back: require('./img/splash_back.png')
+    splash_back: require('./img/splash_back.png'),
+    payment_hint: require('./img/payment_hint.png'),
+    card_hint: require('./img/card_hint.png'),
+    splash_back: require('./img/splash_back.png'),
+    ic_close: require("./img/ic_close.png")
 }
 export default Images;
