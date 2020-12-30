@@ -1,11 +1,12 @@
 import React from 'react';
-import { TouchableWithoutFeedback, Keyboard, Image, View, TouchableOpacity , TouchableHighlight } from 'react-native';
+import { TouchableWithoutFeedback, Keyboard, Image, View, TouchableOpacity , TouchableHighlight, StyleSheet } from 'react-native';
 import { Container, Content, Form, Item, Input , Text, Left, Right} from 'native-base';
 import Spinner_bar from 'react-native-loading-spinner-overlay';
 import { fonts, base , form , elements , Image_Icon, spaces , getScreenWidth } from '../../assets/styles';
 import { Icon } from 'react-native-elements';
 import Images from "../../assets/Images";
 import { SliderBox } from 'react-native-image-slider-box';
+import ImageSlider from 'react-native-image-slider';
 import MainHeader from './../Shared/MainHeader';
 import { _e } from '../../lang'
 import {performNetwork, showToast} from '../Shared/global';
@@ -31,10 +32,16 @@ class Home extends React.Component {
     }
 
     componentDidMount() {
-        if (this.props.push_action != null) {
-            Actions.push(this.props.push_action, { params: { homeComp: this } });
+        if (typeof this.props.params !== 'undefined'){
+            if( this.props.params.push_action != null) {
+                if(this.props.params.push_action != 'notice' && (store.getState().user.apiToken == "" || store.getState().user.apiToken == null)) {
+                    Actions.push("login");
+                }else{
+                    Actions.push(this.props.params.push_action, { params: { homeComp: this } });
+                }
+            }
         }
-
+        
         performNetwork(this, this, getHomeData(store.getState().user.apiToken), true, true).then((response) => {
             if (response == null) { return; }
             this.setState({
@@ -93,14 +100,34 @@ class Home extends React.Component {
                         </View>
                         :
                         <View onLayout={this.onLayout}>
-                            <SliderBox
+                            <ImageSlider
                                 images = {this.state.images}
-                                sliderBoxHeight = {this.state.width}
-                                dotColor="#d4f5f5"
-                                dotStyle={{ width: 10, height: 10, borderRadius: 0, marginHorizontal: 0, padding: 0, margin: 0 }}
-                                inactiveDotColor="#68dbdc"
-                                parentWidth={this.state.width}
-                                paginationBoxVerticalPadding={75}
+                                
+                                loop = {false}
+                                autoPlayWithInterval = {4000}
+                                customSlide={({ index, item, style, width }) => (
+                                    // It's important to put style here because it's got offset inside
+                                    <View key={index} style={[style, styles.customSlide]}>
+                                      <Image source={{ uri: item }} style={{height: this.state.width}} />
+                                    </View>
+                                )}
+                                customButtons={(position, move) => (
+                                    <View style={{display: 'flex', flexDirection: 'row', bottom: 80, alignItems: 'center', justifyContent: 'center'}}>
+                                      {this.state.images.map((image, index) => {
+                                        return (
+                                          <TouchableHighlight
+                                            key={index}
+                                            underlayColor="#ccc"
+                                            onPress={() => move(index)}
+                                            style={styles.button}
+                                          >
+                                            <View style={position == index ? styles.buttonSelected: styles.buttonNoSelected}>
+                                            </View>
+                                          </TouchableHighlight>
+                                        );
+                                      })}
+                                    </View>
+                                )} 
                             />
                         </View>
                     }
@@ -186,6 +213,45 @@ class Home extends React.Component {
         )
     }
 }
+
+const styles = StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: '#F5FCFF',
+    },
+    slider: { backgroundColor: '#000', height: 350 },
+    
+    buttons: {
+      zIndex: 1,
+      height: 15,
+      marginTop: -25,
+      marginBottom: 10,
+      justifyContent: 'center',
+      alignItems: 'center',
+      flexDirection: 'row',
+    },
+    button: {
+      margin: 3,
+      width: 15,
+      height: 15,
+      opacity: 0.9,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    buttonSelected: {
+      width: 10, height: 10,
+      backgroundColor : '#d4f5f5',
+    },
+    buttonNoSelected: {
+      width: 8, height: 8,
+      backgroundColor: '#68dbdc'
+    },
+    
+    customImage: {
+      width: 100,
+      height: 100,
+    },
+  });
 
 const mapDispatchToProps = dispatch => {
     return {
