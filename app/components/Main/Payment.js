@@ -8,12 +8,16 @@ import { _e } from '../../lang';
 import {performNetwork, showToast} from './../Shared/global';
 import Images from "../../assets/Images";
 import Spinner_bar from 'react-native-loading-spinner-overlay';
-import { get_cardinfo, request, finish_good, restore_in_period } from './../Root/api';
+import { get_cardinfo, request, finish_good, restore_in_period, good_restore, request_extended_payment, finish } from './../Root/api';
 import store from "./../../store/configuteStore";
-import { PRICE_SERVICE_USE, PRICE_RESTORE, PRICE_DELIVERY_OF_RETURN_GOOD } from '../../constants';
+import { PRICE_SERVICE_USE, PRICE_RESTORE , PRICE_DELIVERY_OF_RETURN_GOOD } from '../../constants';
 import Dialog, { ScaleAnimation, DialogContent, DialogFooter, DialogButton } from 'react-native-popup-dialog';
 
 let pageTitle = '결제하기';
+
+const {
+    width: windowWidth
+} = Dimensions.get('window');
 
 var alertDialogVisible = false;
 var confirmDialogVisible = false;
@@ -104,6 +108,7 @@ export default class Payment extends React.Component {
     }
 
     onBtnPayment() {
+
         Keyboard.dismiss();
 
         if (this.state.card_num1.length != 4) { this.setState({ cardNumError: _e.cardNumberCheck, card_num1Error: 'error' }); return; }
@@ -122,23 +127,26 @@ export default class Payment extends React.Component {
 
         if (this.state.birth_no == '') { this.setState({ birth_noError: _e.birth_noCheck }); return; }
         if (this.state.card_pwd.length != 2) { this.setState({ card_pwdError: _e.cardPwd2DigitsCheck }); return; }
-
+        
         this.setState({
             cardNumError: null, card_num1Error : null, card_num2Error : null, card_num3Error : null, card_num4Error : null,
             expireDateError: null, card_mmError : null, card_yyError : null,
             birth_noError : null,
             card_pwdError : null
         });
-
         if (this.state.params.key == "request_service") {
             if (this.state.params.cost < 0)  {
                 // show any error for - cost
                 return;
             }
-
+            var is_thing_check = 1;
+            if(this.state.params.isThingCheck)
+                is_thing_check = 1;
+            else
+                is_thing_check = 0;
+            
             performNetwork(this, this.state.params.homeComp, request(
                 store.getState().user.apiToken,
-
                 this.state.params.space_list,
                 this.state.params.space_cost,
                 this.state.params.main_cost,
@@ -146,26 +154,25 @@ export default class Payment extends React.Component {
                 this.state.params.cost,
                 this.state.params.coupon,
                 JSON.stringify(this.state.params.desc),
-    
                 this.state.params.addr1,
                 this.state.params.addr2,
                 this.state.params.detailAddr,
-    
                 this.state.card_num1 + "-" + this.state.card_num2 + "-" + this.state.card_num3 + "-" + this.state.card_num4,
                 this.state.card_mm,
                 this.state.card_yy,
                 this.state.birth_no,
-                this.state.card_pwd
+                this.state.card_pwd,
+                is_thing_check
             )).then((response) => {
                 if (response == null) { return; }
                 setTimeout(function() {
-                    Actions.reset("home", { push_action: "save_box_statistic" });
+                    Actions.reset("home", { params: { push_action: "save_box_statistic" }});
                 }, 0);
-               /* this.setState({
-                    alertDialogVisible: true,
-                    alertDialogMessage: _e.serviceRequestSuccess
-                });
-                alertDialogVisible = true; */
+                // this.setState({
+                //    alertDialogVisible: true,
+                //    alertDialogMessage: _e.serviceRequestSuccess
+                //});
+                //alertDialogVisible = true; 
             });
         } else if (this.state.params.key == "return_good") {
             this.setState({
@@ -179,15 +186,48 @@ export default class Payment extends React.Component {
                 type: 3,
                 delivery_price: PRICE_RESTORE,
                 box_count: this.state.params.box_count,
-                combined_box_count: this.state.params.combined_box_count
+                box_id: this.state.params.box_id
             };
 
             performNetwork(this, this.state.params.homeComp, restore_in_period(
                 store.getState().user.apiToken,
-                
-                this.state.params.box_count,
-                this.state.params.combined_box_count,
+
                 PRICE_RESTORE,
+                JSON.stringify(desc),
+
+                this.state.params.addr1,
+                this.state.params.addr2,
+                this.state.params.detail_addr,
+
+                this.state.card_num1 + "-" + this.state.card_num2 + "-" + this.state.card_num3 + "-" + this.state.card_num4,
+                this.state.card_mm,
+                this.state.card_yy,
+                this.state.birth_no,
+                this.state.card_pwd,
+                this.state.params.box_id
+            )).then((response) => {
+                if (response == null) { return; }
+                
+                this.setState({
+                    alertDialogVisible: true,
+                    alertDialogMessage: _e.paySuccess
+                });
+                alertDialogVisible = true;
+            });
+        } else if (this.state.params.key == "good_restore") { 
+            let desc = {
+                type: 9,
+                service_use_price: PRICE_DELIVERY_OF_RETURN_GOOD,
+                box_id: this.state.params.box_id,
+                goods_list: this.state.params.goods_list
+            };
+            
+            performNetwork(this, this.state.params.homeComp, good_restore(
+                store.getState().user.apiToken,
+
+                this.state.params.good_ids,
+                this.state.params.box_id,
+                PRICE_DELIVERY_OF_RETURN_GOOD,
                 JSON.stringify(desc),
 
                 this.state.params.addr1,
@@ -207,6 +247,40 @@ export default class Payment extends React.Component {
                     alertDialogMessage: _e.paySuccess
                 });
                 alertDialogVisible = true;
+            });
+        }
+        else if (this.state.params.key == 'complete_save') {
+            this.setState({
+                confirmType: 2,
+                confirmDialogVisible: true,
+                confirmDialogMessage: _e.completeSavingConfirm
+            });
+            confirmDialogVisible = true;
+        }
+        else if (this.state.params.key == "extend_pay") { 
+            if (this.state.params.cost < 0)  {
+                // show any error for - cost
+                return;
+            }
+
+            performNetwork(this, this.state.params.homeComp, request_extended_payment(
+                store.getState().user.apiToken,
+                this.state.card_num1 + "-" + this.state.card_num2 + "-" + this.state.card_num3 + "-" + this.state.card_num4,
+                this.state.card_mm,
+                this.state.card_yy,
+                this.state.birth_no,
+                this.state.card_pwd,
+                this.state.params.box_id,
+                this.state.params.numOfMonth,
+                this.state.params.cost,
+                JSON.stringify(this.state.params.desc),
+                this.state.params.coupon
+            )).then((response) => {
+                if (response == null) { return; }
+                setTimeout(function() {
+                    // Actions.reset("home");
+                    Actions.reset("home", { params: { push_action: "save_box_statistic" }});
+                }, 0);
             });
         }
     }
@@ -250,6 +324,36 @@ export default class Payment extends React.Component {
                 alertDialogVisible = true;
             });
         }
+        else if(this.state.confirmType == 2) { // 보관종료 - 처리
+            let desc = {
+                type: 11,
+                cost: PRICE_DELIVERY_OF_RETURN_GOOD,
+                box_id: this.state.params.box_id
+            };
+
+            performNetwork(this, this.state.params.homeComp, finish(
+                store.getState().user.apiToken,
+                this.state.params.addr1,
+                this.state.params.addr2,
+                this.state.params.detail_addr,
+                this.state.params.box_id,
+                JSON.stringify(desc),
+                
+                this.state.card_num1 + "-" + this.state.card_num2 + "-" + this.state.card_num3 + "-" + this.state.card_num4,
+                this.state.card_mm,
+                this.state.card_yy,
+                this.state.birth_no,
+                this.state.card_pwd
+            )).then((response) => {
+                if(response == null) { return; }
+
+                this.setState({
+                    alertDialogVisible: true,
+                    alertDialogMessage: _e.completeSaveSuccess
+                });                
+                alertDialogVisible = true;
+            });
+        }
     }
     onAlertDialogButtonPressed() {
         this.setState({ alertDialogVisible: false });
@@ -258,11 +362,13 @@ export default class Payment extends React.Component {
         var self = this;
         setTimeout(function() {
             if (self.state.params.key == "request_service") {
-                Actions.reset("home", { push_action: "save_box_statistic" });
-            } else if (self.state.params.key == "return_good") {
+                Actions.reset("home", { params: { push_action: "save_box_statistic" }});
+            } else if (self.state.params.key == "return_good" || self.state.params.key == "good_restore") {
                 Actions.reset("home");
             } else if (self.state.params.key == "restore") {
-                Actions.reset("home");
+                Actions.reset("home", { params: { push_action: "save_box_statistic" }});
+            } else if (self.state.params.key == "complete_save") {
+                Actions.reset("home", { params: { push_action: "save_box_statistic" }});
             }
         }, 0);
     }

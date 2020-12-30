@@ -3,11 +3,11 @@
 */
 
 import React from 'react';
-import { Dimensions, View, SafeAreaView, Image, ScrollView, TouchableHighlight, BackHandler } from 'react-native';
+import { Dimensions, View, SafeAreaView, Image, ScrollView, TouchableHighlight, BackHandler, TouchableOpacity  } from 'react-native';
 import { Icon } from 'react-native-elements';
 import { Container, Form, Item, Text, Button, Card, CardItem, Body, Left, Right, Badge } from 'native-base';
 import UserHeader from './../Shared/UserHeader';
-import { base, form, tabs, elements, card, fonts, dialog } from './../../assets/styles';
+import { base, form, tabs, elements, card, fonts, dialog, getScreenHeight } from './../../assets/styles';
 import { connect } from "react-redux";
 import Images from "../../assets/Images";
 import { _e } from "../../lang";
@@ -15,9 +15,11 @@ import { FlatGrid } from 'react-native-super-grid';
 import {performNetwork, showToast} from './../Shared/global';
 import { Actions } from 'react-native-router-flux';
 import store from "./../../store/configuteStore";
-import { cancel_request, return_request } from './../Root/api';
+import { cancel_request, return_request, get_time_list } from './../Root/api';
 import Spinner_bar from 'react-native-loading-spinner-overlay';
 import Dialog, { ScaleAnimation, DialogContent, DialogFooter, DialogButton } from 'react-native-popup-dialog';
+import { CalendarList } from 'react-native-calendars';
+import moment from 'moment';
 
 var alertDialogVisible = false;
 var confirmDialogVisible = false;
@@ -40,11 +42,25 @@ class SaveBoxStatisticTab extends React.Component {
 
             alertDialogVisible: false, alertDialogMessage: "",
             confirmType: 0, confirmDialogVisible: false, confirmDialogTitle: "", confirmDialogMessage: "",
-            selectedRequestId: null
+            selectedRequestId: null , 
+            view_height: 0,
+            selectedDay: {
+                [`${moment().format('YYYY')}-${moment().format('MM')}-${moment().format('DD')}`]: {
+                  selected: true,
+                  selectedColor: '#2E66E7',
+                },
+              },
+            currentDay: `${moment().format('YYYY')}-${moment().format('MM')}-${moment().format('DD')}`,
+            requestTime: null,
+            timeList: [false,false,false,false]
         }
     }
 
     componentDidMount() {
+        //this.setState({view_height: getScreenHeight()});
+
+        //alert(getScreenHeight());
+
         BackHandler.addEventListener('hardwareBackPress', this.handleBackButton);
     }
     componentWillUnmount() {
@@ -94,12 +110,13 @@ class SaveBoxStatisticTab extends React.Component {
                 confirmDialogTitle: "회송요청",
                 confirmDialogMessage: _e.requestReturnConfirm
             });
+            this.getTimeList(this.state.currentDay)
             confirmDialogVisible = true;
         }
     }
 
-    onBoxItemPressed(boxId) {
-        Actions.push("save_info", { params: { homeComp: this.state.homeComp, boxId: boxId } });
+    onBoxItemPressed(boxId, type, extend_pay) {
+        Actions.push("save_info", { params: { homeComp: this.state.homeComp, boxId: boxId, type: type, extend_pay: extend_pay } });
     }
 
     onConfirmDialogButtonPressed() {
@@ -136,7 +153,7 @@ class SaveBoxStatisticTab extends React.Component {
                 showToast();
             });
         } else if (this.state.confirmType == 2) {   // 회송요청
-            performNetwork(this, this.state.homeComp, return_request(store.getState().user.apiToken, this.state.selectedRequestId)).then((response) => {
+            performNetwork(this, this.state.homeComp, return_request(store.getState().user.apiToken, this.state.selectedRequestId, this.state.currentDay,this.state.requestTime)).then((response) => {
                 if (response == null) { return; }
 
                 this.setState({
@@ -162,15 +179,21 @@ class SaveBoxStatisticTab extends React.Component {
         return (
             <View>
                 { this.state.arrSavingData.map( (item, index) => (
-                    <TouchableHighlight key={ index } activeOpacity={ 1 } underlayColor='#eee' onPress={ () => { this.onBoxItemPressed(item.box_list[0].box_id) } }>
+                    <TouchableHighlight key={ index } activeOpacity={ 1 } underlayColor='#eee' onPress={ () => { this.onBoxItemPressed(item.box_list[0].box_id, 'saving', item.box_list[0].rest_days <= 7 ? 'extend_pay' : '') } }>
                         <Card style={ card.itemCard } >
                             <View style={ [card.body, { margin: 0 }] }>
                                 <View style={{ flexDirection: 'row', backgroundColor: '#52d6d7', borderBottomWidth: 0, marginLeft: 0, padding: 10, borderTopLeftRadius: 8, borderTopRightRadius: 8 }}>
                                     <Left>
-                                        <Text style={ [fonts.familyMedium, fonts.size14, fonts.colorWhite] }>보관중인 물건{/*  - { item.box_list[0].box_id } */}</Text>
+                                        <Text style={ [fonts.familyMedium, fonts.size14, fonts.colorWhite] }>{item.box_list[0].rest_days <= 7 ? '보관종료 예정' : '보관중인 물건'}{/*  - { item.box_list[0].box_id } */}</Text>
                                     </Left>
                                     <Right>
-                                        <Text style={ [fonts.familyMedium, fonts.size14, fonts.colorWhite] }>총 { item.total_goods_count }개</Text>
+                                        {
+                                            item.box_list[0].rest_days <= 7 ?
+                                            <Text style={ [fonts.familyMedium, fonts.size14, fonts.colorWhite] }>D{item.box_list[0].rest_days >= 0 ? '-' : '+'}{Math.abs(item.box_list[0].rest_days)}일</Text>
+                                            :
+                                            <Text style={ [fonts.familyMedium, fonts.size14, fonts.colorWhite] }>총 {item.total_goods_count}개</Text>
+                                        }
+                                        
                                     </Right>
                                 </View>
 
@@ -181,9 +204,9 @@ class SaveBoxStatisticTab extends React.Component {
                                     <Body style={{ flex: 1, alignItems: 'flex-end', paddingEnd: 5 }}>
                                         <Text style={ [fonts.familyRegular, fonts.size12, fonts.colorMiddleDarkGray] }>1box |</Text>
                                     </Body>
-                                    <View>
+                                    <Right style={{ flex: 1, width: 20 }}>
                                         <Text style={ [fonts.familyRegular, fonts.size12, fonts.colorMiddleDarkGray] }>물품 { item.box_list[0].goods_count }개</Text>
-                                    </View>
+                                    </Right>
                                 </View>
                             </View>
                     </Card>
@@ -200,34 +223,42 @@ class SaveBoxStatisticTab extends React.Component {
         return (
             <View>
                 { this.state.arrCompletedData.map( (item, index) => (
-                    <Card key={ index } style={ card.itemCard } >
-                        <CardItem cardBody style={ [card.body, { backgroundColor: '#ececec'}] }>
-                            <Body>
-                                <Item style={{ borderBottomWidth: 0, paddingHorizontal: 10 }}>
-                                    <Item style={{ borderColor: '#808080', paddingVertical: 10 }}>
-                                        <Left>
-                                            <Text style={ [fonts.familyMedium, fonts.size14, fonts.colorMiddleDarkGray] }>종료{/*  - { item.box_list[0].box_id } */}</Text>
-                                        </Left>
-                                        <Right>
-                                            <Text style={ [fonts.familyMedium, fonts.size14, fonts.colorMiddleDarkGray] }>총 { item.total_goods_count }개</Text>
-                                        </Right>
-                                    </Item>
-                                </Item>
-
-                                <Item style={{ borderBottomWidth: 0, padding: 10 }}>
-                                    <Left>
-                                        <Text style={ [fonts.familyRegular, fonts.size12, fonts.colorMiddleDarkGray] }>{ item.box_list[0].box_name }</Text>
-                                    </Left>
-                                    <Body style={{ flex: 1, alignItems: 'flex-end', paddingEnd: 5 }}>
-                                        <Text style={ [fonts.familyRegular, fonts.size12, fonts.colorMiddleDarkGray] }>1box |</Text>
-                                    </Body>
-                                    <View>
-                                        <Text style={ [fonts.familyRegular, fonts.size12, fonts.colorMiddleDarkGray] }>물품 { item.box_list[0].goods_count }개</Text>
+                    <TouchableHighlight key={ index } activeOpacity={ 1 } underlayColor='#eee' onPress={ () => { this.onBoxItemPressed(item.box_list[0].box_id, 'completed', '') } }>
+                        <Card key={ index } style={ card.itemCard } >
+                            <CardItem cardBody style={ [card.body, { backgroundColor: '#ececec'}] }>
+                                <Body>
+                                    
+                                    <View style={{ flexDirection: 'row', marginLeft: 0, paddingHorizontal: 10}}>
+                                        <View style={{borderBottomWidth: 1, flex: 1, flexDirection:'row', paddingVertical: 10, borderBottomColor: '#808080'}}>
+                                            <Left>
+                                                <Text style={ [fonts.familyMedium, fonts.size14, fonts.colorMiddleDarkGray] }>보관종료{/*  - { item.box_list[0].box_id } */}</Text>
+                                            </Left>
+                                            {
+                                                item.box_list[0].rest_days > 0 ?
+                                                <Right>
+                                                    <Text style={ [fonts.familyMedium, fonts.size14, fonts.colorMiddleDarkGray] }>남은 기간: { item.box_list[0].rest_days }일</Text>
+                                                </Right>
+                                                :
+                                                null
+                                            }
+                                        </View>
                                     </View>
-                                </Item>
-                            </Body>
-                        </CardItem>
-                    </Card>
+
+                                    <View style={{ borderBottomWidth: 0, padding: 10, flexDirection: 'row' }}>
+                                        <Left>
+                                            <Text style={ [fonts.familyRegular, fonts.size14, fonts.colorMiddleDarkGray] }>{ item.box_list[0].box_name }</Text>
+                                        </Left>
+                                        <Body style={{ flex: 3, alignItems: 'flex-end', paddingEnd: 5 }}>
+                                            <Text style={ [fonts.familyRegular, fonts.size13, fonts.colorMiddleDarkGray] }>1box |</Text>
+                                        </Body>
+                                        <Right style={{ flex: 1, width: 20 }}>
+                                            <Text style={ [fonts.familyRegular, fonts.size13, fonts.colorMiddleDarkGray] }>물품 { item.box_list[0].goods_count }개</Text>
+                                        </Right>
+                                    </View>
+                                </Body>
+                            </CardItem>
+                        </Card>
+                    </TouchableHighlight>
                 )) }
             </View>
         );
@@ -240,7 +271,7 @@ class SaveBoxStatisticTab extends React.Component {
         return (
             <View>
                 { this.state.arrFreeSpaceData.map( (item, index) => (
-                    <TouchableHighlight key={ index } activeOpacity={ 1 } underlayColor='#eee' onPress={ () => { this.onBoxItemPressed(item.box_list[0].box_id) } }>
+                    <TouchableHighlight key={ index } activeOpacity={ 1 } underlayColor='#eee' onPress={ () => { this.onBoxItemPressed(item.box_list[0].box_id, '', '') } }>
                         <Card style={ card.itemCard } >
                             <View style={ [card.body, { margin: 0 }] }>
                                 <View style={{ flexDirection: 'row', backgroundColor: '#52d6d7', borderBottomWidth: 0, marginLeft: 0, padding: 10, borderTopLeftRadius: 8, borderTopRightRadius: 8 }}>
@@ -256,12 +287,12 @@ class SaveBoxStatisticTab extends React.Component {
                                     <Left>
                                         <Text style={ [fonts.familyRegular, fonts.size12, fonts.colorDeepDarkPrimary] }>{ item.box_list[0].box_name }</Text>
                                     </Left>
-                                    <Body style={{ flex: 1, alignItems: 'flex-end', paddingEnd: 5 }}>
+                                    <Body style={{ flex: 3, alignItems: 'flex-end', paddingEnd: 5 }}>
                                         <Text style={ [fonts.familyRegular, fonts.size12, fonts.colorMiddleDarkGray] }>1box |</Text>
                                     </Body>
-                                    <View>
+                                    <Right style={{ flex: 1, width: 20 }}>
                                         <Text style={ [fonts.familyRegular, fonts.size12, fonts.colorMiddleDarkGray] }>물품 { item.box_list[0].goods_count }개</Text>
-                                    </View>
+                                    </Right>
                                 </View>
                             </View>
                     </Card>
@@ -286,8 +317,8 @@ class SaveBoxStatisticTab extends React.Component {
                                         <Left style={{ flex: 1 }}>
                                             <Text style={ [fonts.familyMedium, fonts.size14, fonts.colorWhite] }>진행중</Text>
                                         </Left>
-                                        <Body style={{ flex: 3 }}>
-                                            <Badge style={{ height: 26, borderRadius: 4, backgroundColor: 'white' }}>
+                                        <Body style={{ flex: 3}}>
+                                            <Badge style={{ height: 26, borderRadius: 4, backgroundColor: 'white', justifyContent: 'center' }}>
                                                 <Text style={ [fonts.familyMedium, fonts.size11, fonts.colorDeepLightPrimary] }>{
                                                     item.detail_type == 1 ? "배송중" : (
                                                     item.detail_type == 2 ? "물품정리중" : (
@@ -314,12 +345,12 @@ class SaveBoxStatisticTab extends React.Component {
                                             <Left>
                                                 <Text style={ [fonts.familyRegular, fonts.size12, fonts.colorDeepDarkPrimary] }>{ box.box_name }</Text>
                                             </Left>
-                                            <Body style={{ flex: 1, alignItems: 'flex-end', paddingEnd: 5 }}>
+                                            <Body style={{ flex: 3, alignItems: 'flex-end', paddingEnd: 5 }}>
                                                 <Text style={ [fonts.familyRegular, fonts.size12, fonts.colorMiddleDarkGray] }>{ box.amount }box |</Text>
                                             </Body>
-                                            <View>
+                                            <Right style={{ flex: 1, width: 20 }}>
                                                 <Text style={ [fonts.familyRegular, fonts.size12, fonts.colorMiddleDarkGray] }>물품 { box.goods_count }개</Text>
-                                            </View>
+                                            </Right>
                                         </Item>
                                     )) }
                                     <View style={ base.top10 } />
@@ -383,6 +414,24 @@ class SaveBoxStatisticTab extends React.Component {
             </Dialog>
         );
     }
+    setTimeIndex(index){
+        this.setState({requestTime: index});
+    }
+    getTimeList(request_date){
+        this.setState({loaded : false})
+        this.setState({timeList : [false,false,false,false]});
+        get_time_list(store.getState().user.apiToken, request_date).then((response) => {
+            this.setState({loaded : true})
+            if (response == null) { return; }
+            response['data']['requestCount'].map((val) => {
+                if(val['cnt'] >= 3 && val['REQUEST_TIME'] != null){
+                    var temp = this.state.timeList;
+                    temp[val['REQUEST_TIME']] = true;
+                    this.setState({timeList : temp});
+                }
+            })
+        });
+    }
     renderConfirmDialog() {
         return (
             <Dialog
@@ -403,17 +452,111 @@ class SaveBoxStatisticTab extends React.Component {
                     </DialogFooter>
                 } >
                 <DialogContent>
-                    <Form style={ dialog.formWarning }>
-                        <Image
-                            style={ elements.size60 }
-                            source={ Images.ic_dialog_success } />
-                    </Form>
+                    {
+                        this.state.confirmType == 2 ? 
+                        <View>
+                            <CalendarList style={{ width: '100%',height: 300,marginTop: 40}}
+                                current={this.state.currentDay}
+                                minDate={moment().format()}
+                                horizontal
+                                pastScrollRange={0}
+                                pagingEnabled
+                                calendarWidth={294}
+                                onDayPress={day => {
+                                    this.setState({
+                                    selectedDay: {
+                                        [day.dateString]: {
+                                        selected: true,
+                                        selectedColor: '#2E66E7',
+                                        },
+                                    },
+                                    currentDay: day.dateString,
+                                    });
+                                    this.getTimeList(day.dateString);
+                                }}
+                                monthFormat="yyyy MMMM"
+                                hideArrows
+                                markingType="simple"
+                                theme={{
+                                    selectedDayBackgroundColor: '#2E66E7',
+                                    selectedDayTextColor: '#ffffff',
+                                    todayTextColor: '#2E66E7',
+                                    backgroundColor: '#eaeef7',
+                                    calendarBackground: '#eaeef7',
+                                    textDisabledColor: '#d9dbe0',
+                                    textDayFontSize: 13,
+                                    textMonthFontSize: 13,
+                                    textDayHeaderFontSize: 13
+                                }}
+                                markedDates={this.state.selectedDay}
+                            />
 
-                    <View style={base.top10}></View>
+                            <View style={{display: 'flex', flexDirection: 'row',width: '100%', paddingTop: 10, paddingBottom: 5}}>
+                                <View style={{width: '25%'}}>
+                                    {
+                                        this.state.timeList[0] == false ?
+                                        <TouchableOpacity  onPress={() => {this.setTimeIndex(0)}}>
+                                            <Text style={this.state.requestTime == 0 ? [form.pickerTime , {backgroundColor: '#52d6d7', marginRight:2}]: [form.pickerTime,{marginRight:2}]}>10 ~ 12</Text>
+                                        </TouchableOpacity >
+                                        :
+                                        <Text style={[form.pickerTime , {backgroundColor: '#6d6d6d', marginRight:2}]}>10 ~ 12</Text>
+                                    }
 
-                    <Form>
-                        <Text style={dialog.formWarningText}>{ this.state.confirmDialogMessage }</Text>
-                    </Form>
+                                </View>
+
+                                <View style={{width: '25%'}}>
+                                    {
+                                        this.state.timeList[1] == false ?
+                                        <TouchableOpacity onPress={() => this.setTimeIndex(1)}>
+                                            <Text style={this.state.requestTime == 1 ? [form.pickerTime , {backgroundColor: '#52d6d7', marginRight: 2, marginLeft: 2}]: [form.pickerTime, {marginRight: 2, marginLeft: 2}]}>12 ~ 14</Text>
+                                        </TouchableOpacity>
+                                        :
+                                        <Text style={[form.pickerTime , {backgroundColor: '#6d6d6d', marginRight:2, marginLeft: 2}]}>12 ~ 14</Text>
+                                    }
+
+                                </View>
+
+                                <View style={{width: '25%'}}>
+                                    {
+                                        this.state.timeList[2] == false ?
+                                        <TouchableOpacity onPress={() => this.setTimeIndex(2)}>
+                                            <Text style={this.state.requestTime == 2 ? [form.pickerTime , {backgroundColor: '#52d6d7', marginRight: 2, marginLeft: 2}]: [form.pickerTime, {marginRight: 2, marginLeft: 2}]}>14 ~ 16</Text>
+                                        </TouchableOpacity>
+                                        :
+                                        <Text style={[form.pickerTime , {backgroundColor: '#6d6d6d', marginRight:2, marginLeft: 2}]}>14 ~ 16</Text>
+                                    }
+                                    
+                                </View>
+
+                                <View style={{width: '25%'}}>
+                                    {
+                                        this.state.timeList[3] == false ?
+                                        <TouchableOpacity onPress={() => this.setTimeIndex(3)}>
+                                            <Text style={this.state.requestTime == 3 ? [form.pickerTime , {backgroundColor: '#52d6d7', marginLeft: 2}]: [form.pickerTime, {marginLeft: 2}]}>16 ~ 18</Text>
+                                        </TouchableOpacity>
+                                        :
+                                        <Text style={[form.pickerTime , {backgroundColor: '#6d6d6d', marginLeft: 2}]}>16 ~ 18</Text>
+                                    }
+                                    
+                                </View>
+                            </View>
+
+
+                        </View>
+                        :
+                        <View>
+                            <Form style={ dialog.formWarning }>
+                                <Image
+                                    style={ elements.size60 }
+                                    source={ Images.ic_dialog_success } />
+                            </Form>
+                            <View style={base.top10}></View>
+                            <Form>
+                                <Text style={dialog.formWarningText}>{ this.state.confirmDialogMessage }</Text>
+                            </Form>
+                        </View>
+                    }
+                    
 
                     <Button transparent
                         style={ dialog.closeButton }
@@ -438,19 +581,12 @@ class SaveBoxStatisticTab extends React.Component {
         var arrItems = null;
         if (this.state.typeData.id == 0) {
             if (savingItems == null && completedItems == null && freeSpaceItems == null && inProgressItems == null) {
-                return (
-                    <Container>
-                        <View style={[{flex: 1, justifyContent: 'center' , alignItems: 'center'} , base.tabHeight]}>
-                            <Text style={ [fonts.familyMedium, fonts.size14, fonts.colorMiddleDarkGray] }>
-                                내역이 없습니다.
-                            </Text>
-                        </View>
-
-                        <Spinner_bar color={'#27cccd'} visible={!this.state.loaded} textContent={""}  overlayColor={"rgba(0, 0, 0, 0.5)"}  />
-
-                        { this.renderAlertDialog() }
-                        { this.renderConfirmDialog() }
-                    </Container>
+                arrItems = (
+                    <View style={[{display: 'flex' , flexDirection: 'row' , justifyContent: 'center' , alignItems: 'center'} , base.tabHeight]}>
+                        <Text style={ [fonts.familyMedium, fonts.size14, fonts.colorMiddleDarkGray] }>
+                            내역이 없습니다.
+                        </Text>
+                    </View>
                 );
             } else {
                 arrItems = (
@@ -463,62 +599,26 @@ class SaveBoxStatisticTab extends React.Component {
                 );
             }
         } else if (this.state.typeData.id == 1) {
-            if (inProgressItems != null) {
-                arrItems = inProgressItems;
-            } else {
-                return (
-                    <Container>
-                        <View style={[{flex: 1, justifyContent: 'center' , alignItems: 'center'} , base.tabHeight]}>
-                            <Text style={ [fonts.familyMedium, fonts.size14, fonts.colorMiddleDarkGray] }>
-                                내역이 없습니다.
-                            </Text>
-                        </View>
-
-                        <Spinner_bar color={'#27cccd'} visible={!this.state.loaded} textContent={""}  overlayColor={"rgba(0, 0, 0, 0.5)"}  />
-
-                        { this.renderAlertDialog() }
-                        { this.renderConfirmDialog() }
-                    </Container>
-                );
-            }
+            arrItems = inProgressItems != null ? inProgressItems :
+                (<View style={[{display: 'flex' , flexDirection: 'row' , justifyContent: 'center' , alignItems: 'center'} , base.tabHeight]}>
+                    <Text style={ [fonts.familyMedium, fonts.size14, fonts.colorMiddleDarkGray] }>
+                        내역이 없습니다.
+                    </Text>
+                </View>);
         } else if (this.state.typeData.id == 2) {
-            if (savingItems != null) {
-                arrItems = savingItems;
-            } else {
-                return (
-                    <Container>
-                        <View style={[{flex: 1, justifyContent: 'center' , alignItems: 'center'} , base.tabHeight]}>
-                            <Text style={ [fonts.familyMedium, fonts.size14, fonts.colorMiddleDarkGray] }>
-                                내역이 없습니다.
-                            </Text>
-                        </View>
-
-                        <Spinner_bar color={'#27cccd'} visible={!this.state.loaded} textContent={""}  overlayColor={"rgba(0, 0, 0, 0.5)"}  />
-
-                        { this.renderAlertDialog() }
-                        { this.renderConfirmDialog() }
-                    </Container>
-                );
-            }
+            arrItems = savingItems != null ? savingItems :
+                (<View style={[{display: 'flex' , flexDirection: 'row' , justifyContent: 'center' , alignItems: 'center'} , base.tabHeight]}>
+                    <Text style={ [fonts.familyMedium, fonts.size14, fonts.colorMiddleDarkGray] }>
+                        내역이 없습니다.
+                    </Text>
+                </View>);
         } else if (this.state.typeData.id == 3) {
-            if (completedItems != null) {
-                arrItems = completedItems;
-            } else {
-                return (
-                    <Container>
-                        <View style={[{flex: 1, justifyContent: 'center' , alignItems: 'center'} , base.tabHeight]}>
-                            <Text style={ [fonts.familyMedium, fonts.size14, fonts.colorMiddleDarkGray] }>
-                                내역이 없습니다.
-                            </Text>
-                        </View>
-
-                        <Spinner_bar color={'#27cccd'} visible={!this.state.loaded} textContent={""}  overlayColor={"rgba(0, 0, 0, 0.5)"}  />
-
-                        { this.renderAlertDialog() }
-                        { this.renderConfirmDialog() }
-                    </Container>
-                );
-            }
+            arrItems = completedItems != null ? completedItems :
+                (<View style={[{display: 'flex' , flexDirection: 'row' , justifyContent: 'center' , alignItems: 'center'} , base.tabHeight]}>
+                    <Text style={ [fonts.familyMedium, fonts.size14, fonts.colorMiddleDarkGray] }>
+                        내역이 없습니다.
+                    </Text>
+                </View>);
         }
 
         return (
@@ -535,6 +635,7 @@ class SaveBoxStatisticTab extends React.Component {
     }
 
 }
+
 
 const mapDispatchToProps = dispatch => {
     return {
