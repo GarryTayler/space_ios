@@ -1,10 +1,10 @@
 export const PAGELEN = 10;
 // export const BACKEND_URL = 'https://cryptoonline.ml:3000/';
 //export const BACKEND_URL = 'http://192.168.8.55:3000/';
-//export const BACKEND_URL = 'https://spare-space.co.kr:3000/';
+export const BACKEND_URL = 'https://spare-space.co.kr:3000/';
 //export const BACKEND_URL = 'https://space.asfd.online:3000/';
 //export const BACKEND_URL = 'https://newsp.spare-space.co.kr:3000/';
-export const BACKEND_URL = 'https://land-space.ku-min.com:3020/';
+// export const BACKEND_URL = 'https://land-space.ku-min.com:3020/';
 
 
 export const SERVICE_IMGS = [

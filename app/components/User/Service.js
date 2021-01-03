@@ -51,11 +51,12 @@ export default class Service extends React.Component {
 
     onBtnRequestServicePressed() {
         if (store.getState().user.apiToken == null) {
-            showToast(_e.shouldLogin);
+            //showToast(_e.shouldLogin);
+            Actions.push("login");
             return;
         }
 
-        Actions.reset("home", { push_action: "addressrequest" });
+        Actions.reset("home", { params: { push_action: "addressrequest" }});
     }
 
     onBtnShowServicePricePressed() {
@@ -94,7 +95,7 @@ export default class Service extends React.Component {
                             <Text style={[fonts.familyMedium , fonts.size12 , {color: '#177a7a'}]}>(보관박스 제공, 택배비, 물류 처리비용,</Text>
                         </View>
                         <View style={{marginLeft: 10}}>
-                            <Text style={[fonts.familyMedium , fonts.size12 , {color: '#177a7a'}]}>배상보험비용 포함) 보관박스 사전 배송 후 센터로 회송</Text>
+                            <Text style={[fonts.familyMedium , fonts.size12 , {color: '#177a7a', lineHeight: 18}]}>배상보험비용 포함) 보관박스 사전 배송 후 센터로 회송</Text>
                         </View>
 
 
@@ -119,10 +120,10 @@ export default class Service extends React.Component {
                             <Text style={[fonts.familyBold , fonts.size12 , {color: '#177a7a'}]}>·첫 6개월 이상 보관시</Text>
                         </View>
                         <View>
-                            <Text style={[fonts.familyBold , fonts.size12 , {color: '#177a7a'}]}>30,000원 할인 쿠폰 제공(결제시 당일에 바로 사용가능)</Text>
+                            <Text style={[fonts.familyBold , fonts.size12 , {color: '#177a7a', lineHeight: 18}]}>30,000원 할인 쿠폰 제공(결제시 당일에 바로 사용가능)</Text>
                         </View>
                         <View style={{marginLeft: 10 , marginTop: 6}}>
-                            <Text style={[fonts.familyMedium , fonts.size12 , {color: '#177a7a'}]}>첫 3개월 이상 보관시 15,000원 할인 쿠폰 제공</Text>
+                            <Text style={[fonts.familyMedium , fonts.size12 , {color: '#177a7a'}]}>첫 3개월 이상 보관시 10,000원 할인 쿠폰 제공</Text>
                         </View>
 
                         <View style={{marginTop: 15}}>
